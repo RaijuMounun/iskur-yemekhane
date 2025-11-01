@@ -43,6 +43,12 @@ class Menu(models.Model):
     """
     date = models.DateField(unique=True) # Bir tarihte sadece bir menü olabilir
 
+    meals = models.ManyToManyField(
+        Meal, 
+        through='MenuMeal',  # Hangi ara tabloyu kullanacağını belirtiyoruz
+        related_name='menus' # Bir yemeğin hangi menülerde olduğunu bulmak için
+    )
+
     def __str__(self):
         return str(self.date)
 
