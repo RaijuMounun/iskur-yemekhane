@@ -4,7 +4,8 @@ from rest_framework import viewsets, permissions, generics, status
 from rest_framework.decorators import action
 from .models import Menu, Meal, MealRating, MenuLike, SurveyAnswer, User
 from .serializers import (
-    MenuSerializer, MealSerializer, UserRegisterSerializer, LoginSerializer
+    MenuSerializer, MealSerializer, UserRegisterSerializer, LoginSerializer,
+    MealRatingSerializer, SurveyAnswerSerializer
 )
 
 # TODO (Diğer modeller ve serializer'lar da eklenecek)
@@ -21,7 +22,7 @@ class MenuViewSet(viewsets.ReadOnlyModelViewSet):
     # Varsayılan eylemler (list, retrieve) için herkesin izni olsun (AllowAny),
     # ama 'like' gibi yeni eylemlerimiz için giriş yapmış olma (IsAuthenticated) şartı koyacağız.
     def get_permissions(self):
-        if self.action == 'like':
+        if self.action == ['like', 'submit_survey']:
             # 'like' eylemi için giriş yapmış olmak zorunludur
             return [permissions.IsAuthenticated()]
         # Diğer tüm eylemler (listeleme, görme) için izin gerekmez
@@ -88,15 +89,13 @@ class MenuViewSet(viewsets.ReadOnlyModelViewSet):
             }
         )
 
-        # Tercümanı kullanarak cevabı temiz bir JSON olarak döndür
         serializer = SurveyAnswerSerializer(survey_answer)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
-        
         return Response(serializer.data, status=status_code)
 
 class MealViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Tüm Yemekleri ve tekil bir Yemeği görüntülemek için API endpoint'i.
+    Tüm Yemekleri görüntüler VE yemeklere puan vermek için bir eylem içerir.
     """
     queryset = Meal.objects.all()
     serializer_class = MealSerializer
@@ -126,7 +125,6 @@ class MealViewSet(viewsets.ReadOnlyModelViewSet):
             defaults={'score': data.get('score')}
         )
 
-        # Cevabı temiz JSON olarak döndür
         serializer = MealRatingSerializer(rating)
         status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
         

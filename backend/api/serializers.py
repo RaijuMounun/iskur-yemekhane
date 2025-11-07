@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate
-from .models import Meal, Menu, User, MealRating, SurveyAnswer # İhtiyacımız olan modelleri import et
+from .models import Meal, Menu, User, MealRating, SurveyAnswer
 
 class MealSerializer(serializers.ModelSerializer):
     """
@@ -93,7 +93,7 @@ class LoginSerializer(serializers.Serializer):
         attrs['user'] = user 
         return attrs
     
-    class MealRatingSerializer(serializers.ModelSerializer):
+class MealRatingSerializer(serializers.ModelSerializer):
     """
     Bir yemeğe 1-5 arası yıldız puanı vermek için Serializer.
     """
