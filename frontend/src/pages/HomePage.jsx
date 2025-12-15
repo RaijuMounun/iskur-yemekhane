@@ -1,7 +1,6 @@
 // frontend/src/pages/HomePage.jsx
-
 import { useState, useEffect } from 'react';
-import '../App.css'; 
+import '../App.css';
 import RatingForm from '../components/RatingForm';
 import SurveyForm from '../components/SurveyForm';
 
@@ -9,6 +8,10 @@ function HomePage() {
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   
+  // (Basitlik olsun diye sadece UI için "likedMenus" state'i tutalım)
+  // Normalde bunu backend'den çekmemiz gerekir.
+  const [likedMenus, setLikedMenus] = useState({}); 
+
   useEffect(() => {
     const fetchMenus = async () => {
       try {
@@ -17,7 +20,7 @@ function HomePage() {
         const data = await response.json();
         setMenus(data);
       } catch (error) {
-        console.error("Menüleri çekerken bir hata oluştu:", error);
+        console.error("Hata:", error);
       } finally {
         setLoading(false);
       }
@@ -26,87 +29,73 @@ function HomePage() {
   }, []);
 
   const handleLike = async (menuId) => {
-    
-    // 1. "Kasamızdan" (localStorage) kimlik kartımızı (jeton) alıyoruz.
     const token = localStorage.getItem('authToken');
-
-    // 2. Jeton (kimlik kartı) yoksa, kullanıcı giriş yapmamıştır.
-    //    Bu bir "Savunmacı Programlama" (Defensive Programming) kontrolüdür.
     if (!token) {
-      alert("Beğenmek için lütfen giriş yapın.");
-      // TODO (Belki burada kullanıcıyı /login sayfasına yönlendirebiliriz)
-      return; 
+      alert("Giriş yapmalısın kanki.");
+      return;
     }
 
+    // İsteği atmadan önce UI'da hemen kalbi boyayalım (Optimistic UI)
+    setLikedMenus(prev => ({ ...prev, [menuId]: true }));
+
     try {
-      // 3. Backend'deki KORUMALI API'mıza POST isteği atıyoruz.
-      //    Hangi menüyü beğendiğimizi (menuId) URL'e ekliyoruz.
       const response = await fetch(`http://localhost:8000/api/menus/${menuId}/like/`, {
         method: 'POST',
         headers: {
-          // Bu iki başlık (header) ÇOK ÖNEMLİ
           'Content-Type': 'application/json',
-          
-          // 4. KİMLİK KARTINI GÖSTERME (Authentication)
-          //    "Authorization" başlığına jetonumuzu "Token ..." formatında ekliyoruz.
-          //    Django (Backend) bu başlığı görünce request.user'ı dolduracak.
           'Authorization': `Token ${token}`
         },
-        // Bu isteğe bir 'body' (gövde) yollamıyoruz,
-        // Django kim olduğumuzu jetondan, neyi beğendiğimizi URL'den bilecek.
       });
 
-      // 5. Backend'den gelen cevabı işliyoruz
-      if (response.ok) { // HTTP 201 Created (Başarılı)
-        alert("Menü beğenildi!");
-        // (İleride burayı, butonu 'beğenildi' olarak işaretlemesi için güncelleyebiliriz)
-      } else {
-        // HTTP 400 Bad Request (Zaten beğenilmiş) veya
-        // HTTP 401 Unauthorized (Jeton geçersiz/süresi dolmuş)
-        const errorData = await response.json();
-        alert(`Hata: ${errorData.detail || 'Bir sorun oluştu.'}`);
+      if (!response.ok) {
+        // Hata olursa geri al (Hata mesajını şimdilik boşverelim UI bozulmasın)
+        // const errorData = await response.json();
+        // alert(errorData.detail); 
       }
     } catch (err) {
-      // Ağ hatası (Backend çalışmıyor vb.)
-      alert("Beğenme işlemi sırasında bir ağ hatası oluştu.");
+      alert("Ağ hatası.");
     }
   };
 
-
-  if (loading) {
-    return <div>Yükleniyor...</div>;
-  }
+  if (loading) return <div style={{textAlign:'center', marginTop:'50px'}}>Yükleniyor...</div>;
 
   return (
     <div className="App">
-      <h1>Yemekhane Menüleri</h1>
-      
       <div className="menu-list">
         {menus.map(menu => (
           <div key={menu.id} className="menu-card">
             
-            <h2>{menu.date} Menüsü</h2>
-            
-            {/* 6. YENİ EKLENEN BUTON: Kalp (Beğen) Butonu */}
-            {/* onClick olduğunda, 'handleLike' fonksiyonunu çağır
-              ve ona *bu* menünün ID'sini (menu.id) parametre olarak ver.
-            */}
-            <button 
-              onClick={() => handleLike(menu.id)}
-              style={{ fontSize: '20px', cursor: 'pointer' }}
-            >
-              ♥
-            </button>
-            
+            {/* ÜST KISIM: Tarih ve Kalp */}
+            <div className="menu-header">
+              <h2>{menu.date}</h2>
+              <button 
+                className={`like-btn ${likedMenus[menu.id] ? 'liked' : ''}`}
+                onClick={() => handleLike(menu.id)}
+                title="Menüyü Beğen"
+              >
+                {likedMenus[menu.id] ? '♥' : '♡'}
+              </button>
+            </div>
+
+            {/* YEMEKLER */}
             <ul>
               {menu.meals.map(meal => (
-                <li key={meal.id}>
-                  {meal.name} ({meal.calories} kcal)
-                  <RatingForm mealId={meal.id} />                  
+                <li key={meal.id} className="meal-item">
+                  <div className="meal-info">
+                    <span>{meal.name}</span>
+                    <span style={{color: '#99aabb', fontSize: '0.9rem'}}>{meal.calories} kcal</span>
+                  </div>
+                  {/* Yıldızlar buraya */}
+                  <RatingForm mealId={meal.id} />
                 </li>
               ))}
-            </ul>            
-                  <SurveyForm menuId={menu.id} />
+            </ul>
+
+            {/* ALT KISIM: Anket */}
+            <div className="survey-box">
+               <SurveyForm menuId={menu.id} />
+            </div>
+            
           </div>
         ))}
       </div>

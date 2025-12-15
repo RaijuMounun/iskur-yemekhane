@@ -1,42 +1,271 @@
-#root {
-  max-width: 1280px;
+/* frontend/src/App.css - TURGUT ÖZAL ÜNİVERSİTESİ TEMASI */
+
+:root {
+  /* --- OKUL RENK PALETİ --- */
+  --ozal-navy: #262F59;   /* Ana Renk (Navbar, Kartlar) */
+  --ozal-cyan: #12A7CD;   /* İkincil Renk (Kenarlıklar, İkonlar) */
+  --ozal-orange: #EF7F1A; /* VURGU RENGI (Butonlar, Yıldızlar, Kalp) */
+  
+  /* --- YARDIMCI RENKLER --- */
+  --bg-dark: #1a202c;     /* Daha modern, hafif mat siyah arka plan */
+  --item-bg: #1f274a;     /* Yemek Arka Planı (Navy tonu) */
+  --text-main: #ffffff;
+  --text-muted: #cbd5e0;  /* Daha okunaklı açık gri */
+  --border-color: #374375;
+  --star-inactive: #4a5568;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  position: relative; /* Filigran için gerekli */
+  overflow-x: hidden;
+}
+
+/* --- ARKAPLAN FİLİGRANI (Watermark) --- */
+body::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;  /* Logo boyutu */
+  height: 600px;
+  background-image: url('/logo.png'); /* public klasöründen çeker */
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.05; /* Çok silik görünsün, içeriği bozmasın */
+  z-index: -1;   /* İçeriğin arkasında kalsın */
+  pointer-events: none;
+}
+
+/* --- ANA KONTEYNER --- */
+.App {
+  width: 100%;
+  max-width: 1600px; /* Geniş ekranlar için sınırı artırdık */
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* --- NAVİGASYON (GENİŞLETİLDİ) --- */
+nav {
+  background-color: var(--ozal-navy);
+  padding: 15px 40px;
+  border-radius: 12px;
+  margin-bottom: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* Logo sola, linkler sağa */
+  width: 100%; /* Tam genişlik */
+  border-bottom: 3px solid var(--ozal-cyan); /* Altına Cyan çizgi */
+  box-shadow: 0 10px 30px rgba(18, 167, 205, 0.2);
+  box-sizing: border-box;
+}
+
+.nav-logo {
+  height: 60px; /* Navbar içindeki logo boyutu */
+  width: auto;
+}
+
+.nav-links {
+  display: flex;
+  gap: 30px;
+}
+
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s;
+}
+
+nav a:hover {
+  color: var(--ozal-orange); /* Link üzerine gelince TURUNCU olsun */
+}
+
+/* --- LİSTE YAPISI (YAN YANA DİZİLİM) --- */
+.menu-list {
+  display: flex;
+  flex-wrap: wrap; /* Sığmayan aşağı kaysın */
+  justify-content: center; /* Ortada başlasın */
+  gap: 40px;
+  width: 100%;
+}
+
+/* --- KART TASARIMI --- */
+.menu-card {
+  flex: 0 1 400px; /* Kart genişliği 400px olsun */
+  min-width: 320px;
+  background-color: rgba(38, 47, 89, 0.95); /* Navy (Hafif saydam) */
+  border: 1px solid var(--border-color);
+  border-top: 5px solid var(--ozal-orange); /* Üstte kalın TURUNCU çizgi */
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  transition: transform 0.3s;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(5px); /* Arka planı hafif buzlu göster */
+}
+
+.menu-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--ozal-cyan); /* Hover'da Cyan çerçeve */
+}
+
+.menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+h2 { 
+  margin: 0; 
+  font-size: 1.6rem; 
+  color: var(--text-main);
+  letter-spacing: 0.5px;
+}
+
+ul { list-style: none; padding: 0; flex-grow: 1; }
+
+.meal-item {
+  background-color: var(--item-bg);
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border-left: 4px solid var(--ozal-cyan);
+}
+
+.meal-info {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1.05rem;
+}
+
+/* --- FORM & INPUT --- */
+input, select {
+  background-color: rgba(0,0,0,0.3);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px;
+  border-radius: 6px;
+  width: 100%;
+  box-sizing: border-box; 
+  margin-bottom: 10px;
+  outline: none;
+}
+
+input:focus, select:focus {
+  border-color: var(--ozal-orange); /* Odaklanınca TURUNCU */
+}
+
+label {
+  display: block;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+}
+
+/* --- BUTONLAR (TURUNCU VURGU) --- */
+button, .survey-btn {
+  background-color: var(--ozal-orange) !important; /* TURUNCU */
+  color: #ffffff !important;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-weight: 800; /* Daha kalın font */
+  cursor: pointer;
+  width: 100%;
+  text-transform: uppercase;
+  margin-top: 15px;
+  letter-spacing: 1px;
+  transition: 0.2s;
+  box-shadow: 0 4px 15px rgba(239, 127, 26, 0.4);
+}
+
+button:hover, .survey-btn:hover {
+  background-color: #ff9130 !important; /* Daha açık turuncu */
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 127, 26, 0.6);
+}
+
+button:disabled {
+  background-color: var(--border-color) !important;
+  color: var(--text-muted) !important;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* --- LIKE & STAR (TURUNCU) --- */
+.like-btn {
+  background: none !important;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  font-size: 2.2rem;
+  color: var(--text-muted) !important;
+  box-shadow: none !important;
+}
+.like-btn:hover { 
+  transform: scale(1.2) !important; 
+  background: none !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+.like-btn.liked { 
+  color: var(--ozal-orange) !important; /* BEĞENİLİNCE TURUNCU */
+  filter: drop-shadow(0 0 8px rgba(239, 127, 26, 0.8));
+}
+
+.star-rating {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  font-size: 1.8rem;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.star { color: var(--star-inactive); transition: 0.2s; }
+.star.active { 
+  color: var(--ozal-orange); /* YILDIZLAR TURUNCU */
+  text-shadow: 0 0 10px rgba(239, 127, 26, 0.6);
+}
+.star:hover { transform: scale(1.2); }
+
+/* --- ANKET KUTUSU --- */
+.survey-form {
+  background-color: rgba(0,0,0,0.2);
+  margin-top: 25px;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  border-top: 2px solid var(--ozal-cyan);
+}
+.survey-form h4 {
   text-align: center;
+  margin: 0 0 20px 0;
+  color: var(--ozal-cyan);
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  font-weight: 700;
 }
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+.message { color: var(--ozal-orange); font-size: 0.9rem; text-align: center; margin-top: 15px; font-weight: bold; }
+.error-msg { color: #ff5555; display: block; text-align: center; }
