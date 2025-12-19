@@ -1,0 +1,86 @@
+/* src/styles/main.css */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0; padding: 0; width: 100%; min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--bg-body); color: var(--text-main);
+  transition: background 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Arka Plan Logosu */
+body::before {
+  content: ""; position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); width: 600px; height: 600px;
+  background-image: url('/logo.png'); background-position: center; background-size: contain; background-repeat: no-repeat;
+  opacity: 0.03; z-index: -1; pointer-events: none;
+}
+
+.layout-wrapper { display: flex; flex-direction: column; min-height: 100vh; width: 100%; }
+
+/* Navbar */
+.navbar {
+  width: 100%; height: 80px;
+  background: var(--nav-bg); border-bottom: 1px solid var(--nav-border); border-top: 4px solid var(--ozal-navy);
+  display: flex; justify-content: center; position: sticky; top: 0; z-index: 1000;
+  backdrop-filter: blur(10px); transition: background 0.3s;
+}
+.nav-container { width: 100%; max-width: 1600px; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; }
+.nav-logo { height: 50px; width: auto; transition: transform 0.2s; } .nav-logo:hover { transform: scale(1.05); }
+.nav-actions { display: flex; align-items: center; gap: 30px; }
+.nav-links { display: flex; gap: 10px; }
+.nav-links a { text-decoration: none; color: var(--nav-text); font-weight: 700; font-size: 0.95rem; text-transform: uppercase; padding: 10px 15px; border-radius: 6px; transition: all 0.2s; }
+.nav-links a:hover { background-color: var(--nav-hover-bg); color: var(--ozal-cyan); }
+.theme-btn { background: transparent; border: 1px solid var(--nav-border); color: var(--nav-text); width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.theme-btn:hover { background: var(--nav-hover-bg); border-color: var(--ozal-cyan); transform: rotate(15deg); }
+
+/* Genel İçerik */
+.main-content { flex: 1; width: 100%; max-width: 1400px; margin: 0 auto; padding: 50px 20px; display: flex; flex-direction: column; align-items: center; }
+.page-header { text-align: center; margin-bottom: 50px; width: 100%; }
+.page-header h1 { font-size: 2.5rem; color: var(--heading-color); margin: 0 0 10px 0; font-weight: 800; }
+.page-header p { font-size: 1.1rem; color: var(--text-muted); margin: 0; }
+.footer { width: 100%; background: var(--footer-bg); border-top: 1px solid var(--nav-border); padding: 30px; text-align: center; color: var(--footer-text); font-size: 0.9rem; margin-top: auto; }
+
+/* KULLANICI MENÜSÜ (Minimalist) */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* İsim ve ikon arası boşluk */
+  /* Background ve border kaldırıldı */
+  padding: 0; 
+}
+
+.user-welcome {
+  font-size: 1rem;
+  color: var(--nav-text);
+  font-weight: 600;
+}
+
+.user-welcome strong {
+  color: var(--ozal-cyan);
+  font-weight: 800;
+}
+
+/* ÇIKIŞ BUTONU (İkon) */
+.logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted); /* Varsayılan gri */
+  padding: 8px;
+  border-radius: 50%; /* Yuvarlak hover alanı */
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+
+.logout-btn svg {
+  width: 22px; height: 22px;
+}
+
+.logout-btn:hover {
+  background-color: rgba(220, 53, 69, 0.1); /* Çok hafif kırmızı fon */
+  color: #dc3545; /* İkon kırmızı olsun */
+  transform: translateX(3px); /* Hafif sağa kaçış efekti */
+}

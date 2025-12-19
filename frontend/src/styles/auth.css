@@ -1,0 +1,137 @@
+/* src/styles/auth.css */
+
+.auth-page-wrapper {
+  display: flex; justify-content: center; align-items: center;
+  width: 100%; min-height: 85vh; padding: 40px;
+  overflow: hidden; /* Taşmaları gizle */
+}
+
+/* KART YAPISI */
+.auth-card {
+  display: flex; 
+  /* flex-direction her zaman ROW olacak. Yönü 'order' ile değiştireceğiz */
+  flex-direction: row; 
+  width: 100%; max-width: 1100px; min-height: 650px;
+  background: var(--card-bg);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+  position: relative;
+  will-change: transform, width, height; /* Performans */
+}
+
+/* DÖNEN LOGO (Görsel Tarafın İçine Gömüldü) */
+/* Artık Visual Side içinde ::before kullanacağız ki onunla beraber kaysın */
+.auth-visual-side::before {
+  content: ""; position: absolute; 
+  /* Tam orta nokta */
+  top: 50%; left: 50%; 
+  transform: translate(-50%, -50%);
+  width: 150%; height: 150%; /* Dışarı taşsın */
+  background-image: url('/logo.png');
+  background-repeat: no-repeat; background-position: center; background-size: contain;
+  opacity: 0.07; z-index: 0; pointer-events: none;
+  animation: spinSlow 120s linear infinite;
+}
+
+/* GÖRSEL TARAF (KAYAN KUTU) */
+.auth-visual-side {
+  flex: 1; /* %50 Genişlik */
+  /* Background rengini React kontrol ediyor (Animation) */
+  color: white;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  padding: 40px; text-align: center;
+  position: relative; 
+  overflow: hidden; /* Dönen logo dışarı taşmasın */
+  z-index: 2; /* Formun üstünde görünsün kayarken (opsiyonel) */
+}
+
+/* FORM TARAF */
+.auth-form-side {
+  flex: 1; /* %50 Genişlik */
+  padding: 60px;
+  display: flex; flex-direction: column; justify-content: center;
+  background-color: var(--card-bg);
+  position: relative;
+  z-index: 1;
+}
+
+/* İÇERİKLER */
+.visual-content, .auth-header, form, .auth-link { position: relative; z-index: 5; }
+
+/* DİĞER BİLEŞENLER (Aynı Kalabilir) */
+.visual-logo { width: 120px; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3)); }
+.visual-title { font-size: 2rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; color: #fff; }
+.visual-text { font-size: 1.1rem; opacity: 0.9; max-width: 80%; margin: 0 auto; color: #fff; }
+.auth-header { margin-bottom: 30px; }
+.auth-header h2 { font-size: 2.2rem; color: var(--heading-color); margin-bottom: 10px; }
+.auth-header p { color: var(--text-muted); }
+
+.modern-input-group { position: relative; margin-bottom: 20px; width: 100%; }
+.modern-input-group label { display: block; font-size: 0.95rem; font-weight: 600; color: var(--heading-color); margin-bottom: 8px; }
+.password-input-wrapper { display: flex; gap: 10px; align-items: center; width: 100%; }
+.password-input-wrapper .modern-input { flex-grow: 1; width: auto; }
+
+.generator-btn { background: transparent; border: 2px solid var(--input-border); color: var(--text-muted); border-radius: 12px; width: 54px; height: 54px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.generator-btn:hover { border-color: var(--ozal-orange); color: var(--ozal-orange); background: rgba(239, 127, 26, 0.05); }
+.generator-btn svg { width: 24px; height: 24px; fill: currentColor; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center; z-index: 9999; }
+.modal-box { background: var(--card-bg); padding: 30px; border-radius: 20px; border-top: 5px solid var(--ozal-orange); box-shadow: 0 20px 60px rgba(0,0,0,0.4); text-align: center; max-width: 420px; width: 90%; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.generated-pass-display { background: var(--bg-body); border: 2px dashed var(--input-border); padding: 15px; font-family: 'Consolas', monospace; font-size: 1.5rem; font-weight: 700; color: var(--ozal-navy); margin: 25px 0; border-radius: 10px; word-break: break-all; }
+.modal-actions { display: flex; gap: 10px; justify-content: center; }
+.modal-btn { padding: 12px 24px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; }
+.btn-copy { background: var(--ozal-orange); color: white; flex: 1; }
+.btn-cancel { background: transparent; color: var(--text-muted); border: 1px solid var(--input-border); }
+
+@keyframes spinSlow { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+/* MOBİL UYUM */
+@media (max-width: 900px) {
+  .auth-card { flex-direction: column !important; }
+  /* Mobilde animasyon yerine basit sıra değişikliği */
+  .auth-visual-side { order: 1 !important; padding: 30px; }
+  .auth-form-side { order: 2 !important; padding: 30px; }
+}
+
+/* E-POSTA (Öğrenci No) ALANI İÇİN ÖZEL STİL */
+.email-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  gap: 0; /* Arada boşluk olmasın, bitişik dursunlar */
+  position: relative;
+  width: 100%;
+}
+
+/* Input kutusu (Soldaki) */
+.email-input-wrapper .modern-input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-right: none; /* Sağ çizgiyi kaldır, bütünlük sağla */
+  flex: 1; /* Mümkün olan alanı kapla */
+}
+
+/* Sabit Uzantı Kısmı (@ozal.edu.tr) */
+.email-suffix {
+  background-color: var(--input-bg);
+  border: 2px solid var(--input-border);
+  border-left: none; /* Sol çizgiyi kaldır */
+  color: var(--text-muted);
+  padding: 16px 15px; /* Input padding'i ile aynı olsun */
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap; /* Yazı alt satıra kaymasın */
+  user-select: none; /* Seçilemesin */
+  height: 56px; /* Input yüksekliği ile eşitle */
+}
+
+/* Input'a odaklanınca Suffix'in çerçevesi de parlasın (Opsiyonel ama şık) */
+.email-input-wrapper:focus-within .email-suffix {
+  border-color: var(--ozal-cyan);
+  background-color: var(--card-bg);
+}

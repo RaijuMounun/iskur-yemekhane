@@ -1,149 +1,200 @@
-// 1. Gerekli kancaları (hooks) import ediyoruz
-// useState: Form verilerini ve hata/yüklenme durumlarını tutmak için
-// useNavigate: Başarılı kayıttan sonra kullanıcıyı yönlendirmek için
+// frontend/src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { createPortal } from 'react-dom'; // <--- 1. YENİ IMPORT: Portal için gerekli
 
 function RegisterPage() {
-  
-  // 2. "Controlled Component" (Kontrollü Bileşen) Best Practice'i
-  // Formdaki *tüm* veriler, React state'i tarafından kontrol edilir.
-  // Bu, React'i "Tek Gerçek Kaynağı" (Single Source of Truth) yapar.
-  const [formData, setFormData] = useState({
-    email: '',
-    username: '',
-    password: '',
-    full_name: ''
+  // State yapısını değiştirdik: 'email' yerine 'studentNumber' var.
+  const [formData, setFormData] = useState({ 
+    username: '', 
+    studentNumber: '', 
+    password: '' 
   });
-
-  // 3. Kullanıcı deneyimi (UX) için yüklenme ve hata state'leri
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  // 4. Yönlendirme fonksiyonunu hazırlıyoruz
+  
+  const [message, setMessage] = useState('');
+  const [showModal, setShowModal] = useState(false);
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  
   const navigate = useNavigate();
 
-  // 5. Formdaki herhangi bir input değiştikçe state'i güncelleyen fonksiyon
+  // Genel Input Değişimi (Kullanıcı Adı ve Şifre için)
   const handleChange = (e) => {
-    // e.target'dan 'name' (örn: "email") ve 'value' (örn: "test@") alır
-    const { name, value } = e.target;
-    
-    // Önceki state'i (...prevState) kopyala,
-    // sadece değişen alanı ([name]) yeni değeriyle (value) güncelle.
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 6. Form "Submit" (Gönder) butonuna basıldığında çalışacak ana fonksiyon
-  const handleSubmit = async (e) => {
-    // Tarayıcının varsayılan olarak sayfayı yenilemesini engelle
-    e.preventDefault(); 
-
-    // --- İstemci Tarafı Doğrulama (Client-Side Validation) ---
-    // Sunucuyu (Django) boşuna yormamak için bir "Best Practice"tir.
-    // Kuralımızı (Django'da da vardı) burada da kontrol edelim.
-    if (!formData.email.endsWith('@ozal.edu.tr')) {
-        setError("Hata: Sadece okul e-posta adresleri (@ozal.edu.tr) ile kayıt olunabilir.");
-        return; // Fonksiyonu burada durdur, API'ye istek atma.
+  // --- ÖZEL NUMARA INPUT KONTROLÜ ---
+  const handleNumberChange = (e) => {
+    const val = e.target.value;
+    
+    // 1. Regex ile sadece sayıları al (Harfleri siler)
+    const onlyNums = val.replace(/[^0-9]/g, '');
+    
+    // 2. 11 Karakter sınırını zorla
+    if (onlyNums.length <= 11) {
+        setFormData({ ...formData, studentNumber: onlyNums });
     }
+  };
 
-    setLoading(true); // Yükleme başladı
-    setError(null);   // Eski hataları temizle
+  const generatePassword = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*";
+    let pass = "";
+    for (let i = 0; i < 12; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setGeneratedPassword(pass);
+    setShowModal(true);
+  };
+
+  const handleCopyAndUse = () => {
+    navigator.clipboard.writeText(generatedPassword)
+      .then(() => {
+        setFormData({ ...formData, password: generatedPassword });
+        setShowModal(false);
+      })
+      .catch(() => alert('Otomatik kopyalama başarısız.'));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+
+    // --- Backend'e Gönderilecek Veriyi Hazırla ---
+    // Burada numarayı ve uzantıyı birleştirip 'email' alanına koyuyoruz.
+    const payload = {
+        username: formData.username,
+        email: `${formData.studentNumber}@ozal.edu.tr`, // BİRLEŞTİRME İŞLEMİ
+        password: formData.password
+    };
 
     try {
-      // 7. Backend'imize (Django) POST isteği atıyoruz
       const response = await fetch('http://localhost:8000/api/register/', {
         method: 'POST',
-        headers: {
-          // Backend'e "Sana JSON formatında veri yolluyorum" diyoruz
-          'Content-Type': 'application/json',
-        },
-        // React state'imizi (formData) bir JSON string'ine çevirip yolluyoruz
-        body: JSON.stringify(formData), 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload) // payload gönderiyoruz, formData değil
       });
-
-      // 8. Backend'den gelen cevabı işliyoruz
+      
       if (response.ok) {
-        // BAŞARILI (HTTP 201 Created)
-        alert('Kayıt başarılı! Şimdi giriş sayfasına yönlendiriliyorsunuz.');
-        navigate('/login'); // Kullanıcıyı "Giriş Yap" sayfasına yönlendir
+        alert("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.");
+        navigate('/login');
       } else {
-        // BAŞARISIZ (HTTP 400 Bad Request vb.)
-        // Django'dan gelen hata mesajını (örn: "email already exists") yakala
-        const errorData = await response.json();
-        
-        // Hata mesajını state'e yaz ve kullanıcıya göster
-        // Gelen hata bir obje olabilir (örn: {"email": ["bu e-posta zaten var"]})
-        // Şimdilik bunu basitçe JSON'a çevirip basalım.
-        setError(JSON.stringify(errorData));
+        const data = await response.json();
+        // Hata mesajlarını özelleştir
+        if (data.username) setMessage("Bu kullanıcı adı zaten alınmış.");
+        else if (data.email) setMessage("Bu öğrenci numarası ile zaten kayıt olunmuş.");
+        else setMessage("Kayıt başarısız. Bilgileri kontrol edin.");
       }
     } catch (err) {
-      // Ağ hatası (örn: Backend çalışmıyor)
-      setError("Kayıt sırasında bir ağ hatası oluştu. Lütfen daha sonra tekrar deneyin.");
-    } finally {
-      // Her halükarda (başarı veya hata) yüklemeyi durdur
-      setLoading(false);
+      setMessage("Sunucu hatası.");
     }
   };
 
-  // 9. Ekrana çizilecek JSX (HTML'e benzer)
   return (
-    <div>
-      <h1>Kayıt Ol</h1>
-      
-      {/* Formu 'handleSubmit' fonksiyonumuza bağlıyoruz */}
+    <motion.div
+      key="register-form"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+      transition={{ duration: 0.3 }}
+      style={{ width: '100%' }}
+    >
+      <div className="auth-header">
+        <h2 style={{color: 'var(--ozal-orange)'}}>Hesap Oluştur</h2>
+        <p>Bilgilerinizi girin.</p>
+      </div>
+
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Okul E-postası:</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}    // State'den oku
-            onChange={handleChange}   // Değişince state'i güncelle
-            required
-          />
+        <div className="modern-input-group">
+            <label>Kullanıcı Adı</label>
+            <input 
+              type="text" 
+              name="username" 
+              className="modern-input" 
+              value={formData.username} 
+              onChange={handleChange} 
+              required 
+              placeholder="Kullanıcı adınız..."
+            />
         </div>
-        <div>
-          <label>Kullanıcı Adı:</label>
-          <input
-            type="text"
-            name="username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-          />
+
+        {/* --- YENİLENMİŞ OKUL NUMARASI ALANI --- */}
+        <div className="modern-input-group">
+            <label>Okul Numarası</label>
+            <div className="email-input-wrapper">
+                <input 
+                  type="text" 
+                  name="studentNumber" 
+                  className="modern-input" 
+                  value={formData.studentNumber} 
+                  onChange={handleNumberChange} // Özel handler
+                  required 
+                  placeholder="02..." 
+                  inputMode="numeric" // Mobilde sayı klavyesi açar
+                />
+                {/* Sabit Uzantı */}
+                <div className="email-suffix">@ozal.edu.tr</div>
+            </div>
+            {/* Karakter Sayacı (Opsiyonel ama şık durur) */}
+            <div style={{textAlign:'right', fontSize:'0.75rem', color:'var(--text-muted)', marginTop:'4px'}}>
+                {formData.studentNumber.length} / 11
+            </div>
         </div>
-        <div>
-          <label>Şifre:</label>
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
+
+        <div className="modern-input-group">
+            <label>Şifre</label>
+            <div className="password-input-wrapper">
+                <input 
+                  type="password" 
+                  name="password" 
+                  className="modern-input" 
+                  value={formData.password} 
+                  onChange={handleChange} 
+                  required 
+                  placeholder="Güçlü bir şifre"
+                />
+                <button 
+                  type="button" 
+                  onClick={generatePassword} 
+                  className="generator-btn"
+                  title="Güçlü Şifre Oluştur"
+                >
+                   <svg viewBox="0 0 24 24">
+                     <path d="M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                   </svg>
+                </button>
+            </div>
         </div>
-        <div>
-          <label>Ad Soyad:</label>
-          <input
-            type="text"
-            name="full_name"
-            value={formData.full_name}
-            onChange={handleChange}
-          />
-        </div>
-        
-        {/* Kullanıcıya hata mesajlarını gösterdiğimiz yer */}
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        
-        {/* Yüklenme durumuna göre butonu devre dışı bırak (iyi UX) */}
-        <button type="submit" disabled={loading}>
-          {loading ? 'Kaydediliyor...' : 'Kayıt Ol'}
+
+        <button type="submit" className="auth-btn" style={{background: 'var(--ozal-orange)'}}>
+          KAYIT OL ➔
         </button>
+        
+        {message && <p className="error-msg" style={{marginTop:'15px', color:'red', textAlign:'center', fontWeight:'bold'}}>{message}</p>}
       </form>
-    </div>
+
+      <div className="auth-link">
+        Zaten hesabınız var mı? <Link to="/login" style={{color:'var(--ozal-orange)'}}>Giriş Yapın</Link>
+      </div>
+
+      {/* --- 2. DEĞİŞİKLİK: createPortal KULLANIMI --- */}
+      {/* Bu sayede Modal, kartın içine hapsolmaz, sayfanın en tepesine (body'ye) ışınlanır */}
+      {showModal && createPortal(
+        <div className="modal-overlay">
+            <div className="modal-box">
+                <h3 style={{color: 'var(--ozal-navy)', margin:'0 0 10px 0'}}>Güvenli Şifre Önerisi</h3>
+                <p style={{color: 'var(--text-muted)', fontSize:'0.9rem'}}>
+                    Aşağıdaki şifreyi kullanabilirsin.
+                </p>
+                <div className="generated-pass-display">{generatedPassword}</div>
+                <div className="modal-actions">
+                    <button onClick={handleCopyAndUse} className="modal-btn btn-copy">Kopyala ve Kullan</button>
+                    <button onClick={() => setShowModal(false)} className="modal-btn btn-cancel">Vazgeç</button>
+                </div>
+            </div>
+        </div>,
+        document.body // Modalı document.body'nin içine render et
+      )}
+    </motion.div>
   );
 }
 

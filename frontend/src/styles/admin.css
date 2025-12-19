@@ -1,0 +1,195 @@
+/* src/styles/admin.css */
+
+/* --- ADMIN LAYOUT --- */
+.admin-wrapper {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-body); /* Temaya duyarlı arka plan */
+  transition: background 0.3s;
+}
+
+/* SOL MENÜ (SIDEBAR) */
+.admin-sidebar {
+  width: 280px;
+  background-color: var(--nav-bg); /* Koyu gri (dark) veya beyaz (light) */
+  color: var(--text-main);
+  display: flex;
+  flex-direction: column;
+  padding: 30px 20px;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  border-right: 1px solid var(--nav-border);
+  box-shadow: 4px 0 20px rgba(0,0,0,0.05);
+}
+
+.sidebar-header {
+  margin-bottom: 50px;
+  text-align: center;
+  border-bottom: 1px solid var(--nav-border);
+  padding-bottom: 30px;
+}
+
+.sidebar-logo {
+  width: 90px;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}
+
+.sidebar-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--ozal-cyan);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+/* MENÜ LİNKLERİ */
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.menu-item span { font-size: 1.2rem; } /* İkon boyutu */
+
+.menu-item:hover {
+  background-color: var(--nav-hover-bg);
+  color: var(--text-main);
+  transform: translateX(5px);
+}
+
+.menu-item.active {
+  background: linear-gradient(90deg, var(--ozal-navy) 0%, #3b4575 100%);
+  color: white !important;
+  box-shadow: 0 5px 15px rgba(38, 47, 89, 0.3);
+}
+/* Dark modda aktif menü daha parlak olsun */
+[data-theme="dark"] .menu-item.active {
+  background: linear-gradient(90deg, var(--ozal-cyan) 0%, #0e8cae 100%);
+  color: white !important;
+  box-shadow: 0 5px 15px rgba(18, 167, 205, 0.3);
+}
+
+/* ÇIKIŞ BUTONU */
+.sidebar-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--nav-border);
+  padding-top: 20px;
+}
+.sidebar-footer .menu-item:hover {
+  color: #ef4444; /* Kırmızı */
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* İÇERİK ALANI */
+.admin-content {
+  margin-left: 280px;
+  flex: 1;
+  padding: 50px;
+  max-width: 1600px;
+}
+
+/* --- DASHBOARD KARTLARI --- */
+.dashboard-header { margin-bottom: 40px; }
+.dashboard-header h1 { 
+  color: var(--text-main); 
+  margin-bottom: 10px; font-size: 2.5rem; 
+}
+.dashboard-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+.stat-card {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  align-items: center;
+  gap: 25px;
+  border: 1px solid var(--card-border);
+  transition: transform 0.3s, box-shadow 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Kartın soluna renkli çizgi */
+.stat-card::before {
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+}
+.stat-card.blue::before { background: var(--ozal-cyan); }
+.stat-card.orange::before { background: var(--ozal-orange); }
+.stat-card.navy::before { background: var(--ozal-navy); }
+
+.stat-card:hover { 
+  transform: translateY(-8px); 
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.stat-icon {
+  width: 70px; height: 70px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  background: var(--input-bg); 
+  color: var(--text-main);
+}
+/* İkon renkleri */
+.stat-card.blue .stat-icon { color: var(--ozal-cyan); background: rgba(18, 167, 205, 0.1); }
+.stat-card.orange .stat-icon { color: var(--ozal-orange); background: rgba(239, 127, 26, 0.1); }
+.stat-card.navy .stat-icon { color: var(--ozal-navy); background: rgba(38, 47, 89, 0.1); }
+/* Dark modda navy ikon rengi */
+[data-theme="dark"] .stat-card.navy .stat-icon { color: #818cf8; background: rgba(129, 140, 248, 0.1); }
+
+.stat-info h3 { 
+  margin: 0; font-size: 2.5rem; 
+  color: var(--text-main); font-weight: 800; 
+  line-height: 1; margin-bottom: 5px;
+}
+.stat-info p { 
+  margin: 0; color: var(--text-muted); 
+  font-size: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+/* HIZLI İŞLEMLER */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.action-card {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: var(--card-shadow);
+  text-align: center;
+  border: 1px solid var(--card-border);
+  transition: transform 0.2s;
+}
+.action-card:hover { transform: translateY(-5px); border-color: var(--ozal-cyan); }
+
+.action-card h3 { color: var(--text-main); margin-top: 0; font-size: 1.5rem; }
+.action-card p { color: var(--text-muted); margin-bottom: 30px; font-size: 1rem; line-height: 1.6; }

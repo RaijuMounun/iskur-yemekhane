@@ -1,0 +1,42 @@
+/* src/styles/components.css */
+
+/* Menü Listesi */
+.menu-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 50px; width: 100%; justify-content: center; }
+.menu-card { width: 100%; max-width: 900px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--card-border); border-top: 5px solid var(--ozal-orange); border-radius: 12px; padding: 50px; box-shadow: var(--card-shadow); transition: transform 0.2s; display: flex; flex-direction: column; }
+.menu-card:hover { transform: translateY(-5px); border-color: var(--ozal-cyan); box-shadow: 0 25px 30px -5px rgba(0,0,0,0.15); }
+.menu-header { text-align: center; border-bottom: 1px solid var(--card-border); padding-bottom: 30px; margin-bottom: 30px; }
+.menu-header h2 { font-size: 2rem; color: var(--heading-color); margin-bottom: 10px; font-weight: 700; }
+
+/* Form Elemanları */
+.survey-form { display: flex; flex-direction: column; gap: 25px; flex-grow: 1; }
+.form-group { background: var(--form-group-bg); padding: 25px; border-radius: 8px; border: 1px solid transparent; text-align: center; display: flex; flex-direction: column; gap: 15px; align-items: center; }
+label { color: var(--text-main); font-size: 1.1rem; font-weight: 600; }
+
+/* Inputlar */
+.modern-input, 
+textarea, 
+input[type="text"], 
+input[type="password"], 
+input[type="email"], 
+select {
+  width: 100%; /* Her zaman tam genişlik */
+  box-sizing: border-box; /* Padding genişliği patlatmasın */
+  padding: 15px;
+  background: var(--input-bg);
+  border: 2px solid var(--input-border);
+  color: var(--input-text);
+  border-radius: 12px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  display: block; /* Inline davranmasını engelle */
+}
+
+/* Butonlar */
+.survey-btn, .auth-btn { width: 100%; padding: 18px; background: var(--ozal-orange); color: white; border: none; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.2s; }
+.survey-btn:hover, .auth-btn:hover { background: #D97012; transform: translateY(-2px); box-shadow: 0 10px 20px -5px rgba(239, 127, 26, 0.4); }
+
+.star-rating-group { display: flex; gap: 15px; }
+.star { font-size: 2.5rem !important; color: var(--star-inactive); cursor: pointer; }
+.star.active { color: var(--ozal-orange); filter: drop-shadow(0 0 5px rgba(239, 127, 26, 0.4)); }
+.message { color: var(--ozal-cyan); font-weight: 700; text-align: center; margin-top: 15px; }

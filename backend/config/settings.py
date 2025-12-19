@@ -189,3 +189,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' #TODO Değiştir

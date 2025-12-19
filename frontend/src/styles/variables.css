@@ -1,0 +1,57 @@
+:root {
+  /* --- KURUMSAL RENKLER --- */
+  --ozal-navy: #262F59;
+  --ozal-cyan: #12A7CD;
+  --ozal-orange: #EF7F1A;
+
+  /* --- LIGHT TEMA --- */
+  --bg-body: #F4F6F8;
+  --nav-bg: #ffffff;
+  --nav-text: var(--ozal-navy);
+  --nav-border: #E5E7EB;
+  --nav-hover-bg: rgba(18, 167, 205, 0.08);
+
+  --card-bg: #ffffff;
+  --card-border: #E5E7EB;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+
+  --text-main: #374151;
+  --text-muted: #6B7280;
+  --heading-color: var(--ozal-navy);
+
+  --input-bg: #F9FAFB;
+  --input-border: #D1D5DB;
+  --input-text: #1F2937;
+  --star-inactive: #D1D5DB;
+
+  --footer-bg: #ffffff;
+  --footer-text: #6B7280;
+  --form-group-bg: #F9FAFB;
+}
+
+[data-theme="dark"] {
+  /* --- DARK TEMA (Koyu Gri / Antrasit) --- */
+  --bg-body: #121212; 
+  
+  --nav-bg: #1E1E1E; /* Sidebar rengi koyu gri */
+  --nav-text: #E2E8F0;
+  --nav-border: #333333;
+  --nav-hover-bg: rgba(255, 255, 255, 0.05);
+
+  --card-bg: #1E1E1E; /* Kartlar sidebar ile aynı */
+  --card-border: #333333;
+  --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+
+  --text-main: #E0E0E0;
+  --text-muted: #A0A0A0;
+  --heading-color: var(--ozal-cyan);
+
+  --input-bg: #2A2A2A;
+  --input-border: #404040;
+  --input-text: #F8FAFC;
+  --star-inactive: #475569;
+
+  --footer-bg: #121212;
+  --footer-text: #64748B;
+  --form-group-bg: rgba(255, 255, 255, 0.03);
+}

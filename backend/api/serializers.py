@@ -28,7 +28,7 @@ class LoginSerializer(serializers.Serializer):
             return {'user': user}
         raise serializers.ValidationError("Giriş bilgileri hatalı.")
 
-# --- YENİ ANKET SİSTEMİ SERIALIZERLARI ---
+# --- ANKET SİSTEMİ SERIALIZERLARI ---
 
 class QuestionSerializer(serializers.ModelSerializer):
     """Anketin içindeki soruları listeler"""
@@ -42,7 +42,7 @@ class SurveySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Survey
-        fields = ['id', 'title', 'description', 'questions', 'is_active']
+        fields = ['id', 'title', 'description', 'questions', 'is_active', 'created_at']
 
 class AnswerSerializer(serializers.ModelSerializer):
     """Cevap verirken kullanılacak yapı"""
@@ -54,9 +54,11 @@ class ResponseSerializer(serializers.ModelSerializer):
     """Öğrenci anketi gönderdiğinde çalışacak"""
     answers = AnswerSerializer(many=True) # İçinde cevaplar listesi olacak
 
+    survey_title = serializers.CharField(source='survey.title', read_only=True)
+
     class Meta:
         model = Response
-        fields = ['survey', 'answers']
+        fields = ['id', 'survey', 'survey_title', 'answers', 'submitted_at']
 
     def create(self, validated_data):
         # DRF standart create metodu nested (iç içe) yazmayı desteklemez,
@@ -73,3 +75,34 @@ class ResponseSerializer(serializers.ModelSerializer):
             Answer.objects.create(response=response, **answer_data)
 
         return response
+    
+    def update(self, instance, validated_data):
+        # 1. Gelen yeni cevapları al
+        answers_data = validated_data.pop('answers', [])
+        
+        # 2. Cevap Paketinin (Response) kendisini güncelle (tarih vs.)
+        instance = super().update(instance, validated_data)
+        
+        # 3. ESKİ CEVAPLARI SİL (En temiz yöntem budur)
+        instance.answers.all().delete()
+
+        # 4. YENİ CEVAPLARI OLUŞTUR
+        for answer_data in answers_data:
+            Answer.objects.create(response=instance, **answer_data)
+            
+        return instance
+    
+class QuestionSerializer(serializers.ModelSerializer):
+    """Anketin içindeki soruları listeler"""
+    class Meta:
+        model = Question
+        # 'survey' alanını ekledik ki soru oluştururken anketi seçebilelim
+        fields = ['id', 'survey', 'text', 'question_type', 'order', 'options']
+
+# --- ADMIN KULLANICI YÖNETİMİ İÇİN ---
+class UserAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Admin bu alanları görecek ve değiştirebilecek
+        fields = ['id', 'username', 'email', 'is_staff', 'is_superuser', 'date_joined']
+        read_only_fields = ['date_joined'] # Kayıt tarihi değiştirilemesin

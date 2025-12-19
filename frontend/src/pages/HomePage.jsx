@@ -1,26 +1,33 @@
 // frontend/src/pages/HomePage.jsx
 import { useState, useEffect } from 'react';
-import '../App.css'; 
+import { Link } from 'react-router-dom';
+import '../styles/components.css'; 
 import SurveyForm from '../components/SurveyForm';
 
 function HomePage() {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    
+    if (!token) {
+        setIsAuthenticated(false);
+        setLoading(false); // Yüklemeyi bitir ki kart görünsün
+        return;
+    }
+
+    setIsAuthenticated(true);
+
     const fetchSurveys = async () => {
       try {
-        const token = localStorage.getItem('authToken');
-        // ARTIK MENÜLERİ DEĞİL, ANKETLERİ ÇEKİYORUZ
         const response = await fetch('http://localhost:8000/api/surveys/', {
-            headers: token ? { 'Authorization': `Token ${token}` } : {}
+            headers: { 'Authorization': `Token ${token}` }
         });
-
         if (response.ok) {
           const data = await response.json();
           setSurveys(data);
-        } else {
-            console.error("Anketler çekilemedi");
         }
       } catch (error) {
         console.error("Hata:", error);
@@ -31,38 +38,49 @@ function HomePage() {
     fetchSurveys();
   }, []);
 
-  if (loading) return <div style={{textAlign:'center', marginTop:'50px', color:'#fff'}}>Yükleniyor...</div>;
+  if (loading) return <div style={{textAlign:'center', marginTop:'50px'}}>Yükleniyor...</div>;
 
+  // GİRİŞ YAPILMAMIŞSA BU KART GÖRÜNMELİ
+  if (!isAuthenticated) {
+    return (
+        <div style={{width: '100%', display: 'flex', justifyContent: 'center', marginTop: '50px'}}>
+            <div className="menu-card" style={{textAlign: 'center', maxWidth: '600px', padding: '60px 40px'}}>
+                <div style={{fontSize: '4rem', marginBottom: '20px'}}>🔒</div>
+                <h2 style={{color: 'var(--heading-color)', marginBottom: '15px'}}>Oturum Açmanız Gerekiyor</h2>
+                <p style={{color: 'var(--text-muted)', marginBottom: '30px', fontSize: '1.1rem'}}>
+                    Etkinlik ve anketleri görüntülemek, oylamalara katılmak için lütfen giriş yapınız.
+                </p>
+                
+                <div style={{display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap'}}>
+                    <Link to="/login" className="auth-btn" style={{textDecoration:'none', width: 'auto', padding: '15px 40px'}}>
+                        Giriş Yap
+                    </Link>
+                    <Link to="/register" className="auth-btn" style={{textDecoration:'none', width: 'auto', padding: '15px 40px', background: 'transparent', color: 'var(--ozal-orange)', border: '2px solid var(--ozal-orange)'}}>
+                        Kayıt Ol
+                    </Link>
+                </div>
+            </div>
+        </div>
+    );
+  }
+
+  // GİRİŞ YAPILMIŞSA ANKETLER
   return (
-    <div className="App">
-      
-      {/* BAŞLIK */}
-      <div style={{textAlign:'center', marginBottom:'30px'}}>
-        <h1 style={{color:'var(--ozal-orange)', fontSize:'2.5rem', textShadow:'0 0 10px rgba(0,0,0,0.5)'}}>
-           ANKET SİSTEMİ
-        </h1>
-        <p style={{color:'var(--text-muted)'}}>Aktif etkinlikleri ve hizmetleri değerlendirin.</p>
-      </div>
-
+    <div style={{width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div className="menu-list">
         {surveys.length === 0 ? (
-            <div style={{color:'#fff', fontSize:'1.2rem'}}>Şu an aktif bir anket bulunmuyor.</div>
+            <div className="menu-card" style={{textAlign: 'center', padding: '60px'}}>
+                <h3 style={{color: 'var(--text-muted)'}}>📭 Şu an aktif bir anket bulunmuyor.</h3>
+                <p style={{color:'var(--text-muted)'}}>Daha sonra tekrar kontrol ediniz.</p>
+            </div>
         ) : (
             surveys.map(survey => (
-            <div key={survey.id} className="menu-card" style={{maxWidth:'600px', flex:'1 1 500px'}}>
-                
-                {/* ANKET BAŞLIĞI */}
-                <div className="menu-header" style={{flexDirection:'column', alignItems:'flex-start', gap:'10px'}}>
-                    <h2 style={{color:'var(--ozal-cyan)'}}>{survey.title}</h2>
-                    <p style={{color:'var(--text-muted)', fontSize:'0.9rem', margin:0}}>
-                        {survey.description}
-                    </p>
+            <div key={survey.id} className="menu-card">
+                <div className="menu-header">
+                    <h2>{survey.title}</h2>
+                    <p>{survey.description}</p>
                 </div>
-
-                {/* DİNAMİK ANKET FORMU */}
-                {/* SurveyForm'a bu sefer 'surveyData'yı direkt props olarak verelim ki tekrar fetch atmasın */}
                 <SurveyForm preloadedSurvey={survey} />
-                
             </div>
             ))
         )}
