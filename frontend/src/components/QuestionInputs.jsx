@@ -1,59 +1,102 @@
 // frontend/src/components/QuestionInputs.jsx
 import React from 'react';
 
-// --- 1. LETTERBOXD TARZI YILDIZ (Yarım Puanlı) ---
+
+// --- 1. SVG YILDIZ BİLEŞENİ ---
+const StarIcon = ({ fillPercentage, onClick }) => {
+  return (
+    <div 
+        onClick={onClick} 
+        style={{ cursor: 'pointer', display: 'inline-block', transition: 'transform 0.1s' }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'} // Hover efekti
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+    >
+      <svg 
+        width="40" 
+        height="40" 
+        viewBox="0 0 24 24" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Gradyan Tanımı (Sihir Burada): 
+            Yıldızın ne kadarının boyanacağını 'offset' belirler.
+            Her yıldıza unique (eşsiz) bir ID veriyoruz ki karışmasın.
+        */}
+        <defs>
+          <linearGradient id={`grad-${fillPercentage}`}>
+            <stop offset={`${fillPercentage}%`} stopColor="#FFD700" /> {/* Altın Sarısı */}
+            <stop offset={`${fillPercentage}%`} stopColor="#E2E8F0" /> {/* Gri (Boş Kısım) */}
+          </linearGradient>
+        </defs>
+        
+        {/* Yıldız Çizimi */}
+        <path 
+            d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" 
+            fill={`url(#grad-${fillPercentage})`} // Yukarıdaki gradyanı kullan
+            stroke="#CBD5E0" // Hafif gri çerçeve
+            strokeWidth="1"
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  );
+};
+
+// --- LETTERBOXD TARZI YILDIZ INPUT (Yarım Puanlı) ---
 export const StarInput = ({ value, onChange }) => {
-  // value string gelebilir ("3.5"), sayıya çevir
   const currentVal = parseFloat(value) || 0;
 
   const handleClick = (starIndex) => {
-    // starIndex: 1, 2, 3, 4, 5 (Hangi yıldıza tıklandı)
+    // starIndex: 1, 2, 3... (Hangi yıldıza tıklandı)
     
-    // Eğer tıklanan yıldıza zaten tam puan verilmişse -> Yarım yap
     if (currentVal === starIndex) {
+      // Zaten tamsa -> Yarıma düşür
       onChange(starIndex - 0.5);
-    }
-    // Eğer zaten o yıldızda yarım puandaysa -> Sıfırla (Kaldır)
-    else if (currentVal === starIndex - 0.5) {
-      onChange(0);
-    }
-    // Değilse -> Tam puan ver
-    else {
+    } else if (currentVal === starIndex - 0.5) {
+      // Zaten yarımsa -> Sıfırla (O yıldızı boşalt)
+      // Ancak buradaki mantık: 3.5 ise ve 3. yıldıza tıklarsan, 
+      // kullanıcı muhtemelen 3 yapmak istiyordur veya silmek istiyordur.
+      // Letterboxd mantığı: Tekrar tıklama o puanı siler.
+      // Biz kullanıcı dostu olsun diye o yıldızı tamamen kaldırıp bir öncekine dönelim.
+      onChange(starIndex - 1); 
+    } else {
+      // Boşsa veya azsa -> Tam puan yap
       onChange(starIndex);
     }
   };
 
   return (
-    <div className="star-rating-group" style={{display:'flex', gap:'5px'}}>
-      {[1, 2, 3, 4, 5].map((star) => {
-        let fillType = 'empty'; // empty, half, full
-        if (currentVal >= star) fillType = 'full';
-        else if (currentVal === star - 0.5) fillType = 'half';
+    <div style={{display:'flex', gap:'5px', alignItems:'center'}}>
+      {[1, 2, 3, 4, 5].map((starIndex) => {
+        
+        let fillPercentage = 0;
+        
+        if (currentVal >= starIndex) {
+          fillPercentage = 100; // Tam dolu
+        } else if (currentVal === starIndex - 0.5) {
+          fillPercentage = 50;  // Yarım dolu
+        } else {
+          fillPercentage = 0;   // Boş
+        }
 
         return (
-          <span 
-            key={star} 
-            onClick={() => handleClick(star)}
-            style={{
-                fontSize: '2rem', 
-                cursor: 'pointer', 
-                color: fillType === 'empty' ? '#ddd' : '#FFD700', // Altın Sarısı
-                position: 'relative',
-                display: 'inline-block',
-                userSelect: 'none'
-            }}
-          >
-            {/* Yarım yıldız için özel karakter veya CSS gradient kullanılabilir ama
-                basitlik için standart ★ kullanıp rengi ayarladık. 
-                Daha ileri görsel için SVG gerekir, şimdilik basit tutuyoruz.
-            */}
-            {fillType === 'half' ? '½' : '★'} 
-            {/* Not: ½ karakteri yerine SVG daha iyi olur ama logic çalışsın diye böyle yaptık.
-                Aşağıda SVG versiyonunu da verebilirim istersen. */}
-          </span>
+          <StarIcon 
+            key={starIndex} 
+            fillPercentage={fillPercentage} 
+            onClick={() => handleClick(starIndex)}
+          />
         );
       })}
-      <span style={{fontSize:'1rem', color:'var(--text-muted)', alignSelf:'center', marginLeft:'10px'}}>
+      
+      {/* Puanı yanına metin olarak yazalım (Opsiyonel, şık durur) */}
+      <span style={{
+          marginLeft:'10px', 
+          fontSize:'1.2rem', 
+          fontWeight:'bold', 
+          color:'var(--ozal-cyan)',
+          minWidth: '30px'
+      }}>
         {currentVal > 0 ? currentVal : ''}
       </span>
     </div>
