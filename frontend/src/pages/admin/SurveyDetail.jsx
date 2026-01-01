@@ -283,35 +283,87 @@ function SurveyDetail() {
 
       {/* --- CEVAPLAR SEKMESİ --- */}
       {activeTab === 'responses' && (
-         /* ... Burası (istatistik kodları) aynen kalacak, kod kalabalığı olmasın diye kopyalamadım ... */
-         /* ... Daha önceki SurveyDetail kodundaki istatistik bloğunu buraya yapıştırabilirsin ... */
         <div style={{display:'flex', flexDirection:'column', gap:'30px'}}>
-             {/* ... Eski istatistik kodlarını buraya koy kanka ... */}
              {!stats ? (
                 <div style={{textAlign:'center', padding:'20px'}}>Veriler yükleniyor...</div>
             ) : stats.length === 0 ? (
-                <div style={{textAlign:'center', padding:'20px'}}>Henüz soru eklenmemiş.</div>
+                <div style={{textAlign:'center', padding:'20px'}}>Henüz soru eklenmemiş veya cevap yok.</div>
             ) : (
                 stats.map((stat) => (
                     <div key={stat.id} style={{background:'var(--card-bg)', padding:'30px', borderRadius:'16px', border:'1px solid var(--card-border)', boxShadow:'var(--card-shadow)'}}>
-                        <div style={{marginBottom:'20px', borderBottom:'1px solid var(--nav-border)', paddingBottom:'15px'}}>
+                        
+                        {/* BAŞLIK */}
+                        <div style={{marginBottom:'20px', borderBottom:'1px solid var(--nav-border)', paddingBottom:'15px', display:'flex', justifyContent:'space-between', alignItems:'center'}}>
                             <h4 style={{margin:0, color:'var(--heading-color)', fontSize:'1.1rem'}}>{stat.text}</h4>
-                            <span style={{fontSize:'0.85rem', color:'var(--text-muted)', background:'var(--input-bg)', padding:'4px 10px', borderRadius:'6px', marginTop:'5px', display:'inline-block'}}>
-                                Toplam Cevap: <strong>{stat.total}</strong>
+                            <span style={{fontSize:'0.85rem', color:'var(--text-muted)', background:'var(--input-bg)', padding:'4px 10px', borderRadius:'6px'}}>
+                                Toplam: <strong>{stat.total}</strong>
                             </span>
                         </div>
-                        {/* İstatistik Gösterimi (Önceki kodlardaki Star/Choice/Text mantığı aynı) */}
-                        {stat.type === 'text' && (
-                             <div style={{maxHeight:'200px', overflowY:'auto'}}>
-                                {stat.results.map((txt, i) => <div key={i} style={{borderBottom:'1px solid var(--card-border)', padding:'5px 0'}}>{txt}</div>)}
+
+                        {/* --- 1. METİN ve TARİH LİSTESİ --- */}
+                        {(stat.type === 'text' || stat.type === 'date') && (
+                             <div style={{maxHeight:'200px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'8px'}}>
+                                {stat.results && stat.results.length > 0 ? stat.results.map((txt, i) => (
+                                    <div key={i} style={{background:'var(--bg-body)', padding:'10px', borderRadius:'8px', fontSize:'0.9rem', color:'var(--text-main)'}}>
+                                        {txt}
+                                    </div>
+                                )) : <span style={{color:'var(--text-muted)'}}>Henüz cevap yok.</span>}
                              </div>
                         )}
-                        {/* Diğer tipler için basit JSON dökümü veya eski görselleştirme kodunu kullanabilirsin */}
-                        {(stat.type !== 'text') && (
-                            <pre style={{background:'var(--bg-body)', padding:'10px', borderRadius:'8px', fontSize:'0.8rem'}}>
-                                {JSON.stringify(stat.results, null, 2)}
-                            </pre>
+
+                        {/* --- 2. SEÇİMLİ SORULAR (Choice & Multiple) - Progress Bar --- */}
+                        {(stat.type === 'choice' || stat.type === 'multiple') && stat.results && (
+                            <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
+                                {Object.entries(stat.results).map(([option, count]) => {
+                                    // Yüzde hesapla
+                                    const percentage = stat.total > 0 ? Math.round((count / stat.total) * 100) : 0;
+                                    return (
+                                        <div key={option}>
+                                            <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.9rem', marginBottom:'5px', color:'var(--text-main)'}}>
+                                                <span>{option}</span>
+                                                <span style={{fontWeight:'bold'}}>{count} ({percentage}%)</span>
+                                            </div>
+                                            <div style={{width:'100%', height:'8px', background:'var(--input-bg)', borderRadius:'4px', overflow:'hidden'}}>
+                                                <div style={{width: `${percentage}%`, height:'100%', background:'var(--ozal-cyan)', transition:'width 0.5s'}}></div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
                         )}
+
+                        {/* --- 3. YILDIZ (Star) --- */}
+                        {stat.type === 'star' && stat.results && (
+                            <div style={{textAlign:'center'}}>
+                                <div style={{fontSize:'3rem', fontWeight:'bold', color:'var(--heading-color)'}}>
+                                    {stat.results.average} <span style={{fontSize:'1.5rem', color:'#FFD700'}}>★</span>
+                                </div>
+                                <p style={{color:'var(--text-muted)', marginTop:'-10px', fontSize:'0.9rem'}}>Ortalama Puan</p>
+                                
+                                {/* Dağılım Grafiği */}
+                                <div style={{marginTop:'20px', display:'flex', gap:'5px', height:'60px', alignItems:'flex-end', justifyContent:'center'}}>
+                                    {stat.results.distribution && Object.entries(stat.results.distribution).map(([star, count]) => (
+                                        <div key={star} style={{width:'40px', display:'flex', flexDirection:'column', alignItems:'center', gap:'5px'}}>
+                                            <div style={{width:'100%', background:'rgba(255, 215, 0, 0.2)', borderRadius:'4px 4px 0 0', height: `${stat.total > 0 ? (count / stat.total) * 100 : 0}%`, minHeight:'2px', position:'relative'}}>
+                                                {count > 0 && <span style={{position:'absolute', top:'-20px', width:'100%', textAlign:'center', fontSize:'0.8rem'}}>{count}</span>}
+                                            </div>
+                                            <span style={{fontSize:'0.8rem'}}>{star}★</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* --- 4. ÖLÇEK (Scale 1-10) --- */}
+                        {stat.type === 'scale' && stat.results && (
+                            <div style={{textAlign:'center'}}>
+                                <div style={{fontSize:'3rem', fontWeight:'bold', color:'var(--ozal-orange)'}}>
+                                    {stat.results.average} <span style={{fontSize:'1.2rem', color:'var(--text-muted)'}}>/ 10</span>
+                                </div>
+                                <p style={{color:'var(--text-muted)', marginTop:'-10px', fontSize:'0.9rem'}}>Genel Memnuniyet Ortalaması</p>
+                            </div>
+                        )}
+
                     </div>
                 ))
             )}

@@ -68,66 +68,84 @@ class SurveyViewSet(viewsets.ModelViewSet):
         survey = self.get_object()
         questions = survey.questions.all().order_by('order')
         
-        analysis_data = []
-
+        results_data = []
+        
         for q in questions:
-            # Bu soruya verilen tüm cevapları çek
             answers = Answer.objects.filter(question=q)
             total_responses = answers.count()
 
-            q_data = {
-                "id": q.id,
-                "text": q.text,
-                "type": q.question_type,
-                "total": total_responses,
-                "results": None
+            question_data = {
+                'id': q.id,
+                'text': q.text,
+                'type': q.question_type,
+                'total': total_responses,
+                'results': None
             }
+            
+            # 1. TEXT ve DATE (Liste olarak dön)
+            if q.question_type in ['text', 'date']:
+                # Son 50 cevabı listele
+                question_data['results'] = [a.value for a in answers.order_by('-id')[:50]]
+            
+            # 2. CHOICE ve MULTIPLE (Seçenek sayımı)
+            elif q.question_type in ['choice', 'multiple']:
+                # Seçenekleri al (virgülle ayrılmış string ise listeye çevir)
+                options = [opt.strip() for opt in q.options.split(',')] if q.options else []
+                stats = {opt: 0 for opt in options}
+                
+                for a in answers:
+                    if not a.value: continue
+                    
+                    # Multiple cevaplar "Elma, Armut" gibi virgüllü gelebilir
+                    # Choice cevaplar tek gelir ama yine de split yapmak güvenlidir
+                    selected_items = [s.strip() for s in a.value.split(',')]
+                    
+                    for s in selected_items:
+                        if s in stats:
+                            stats[s] += 1
+                        # Seçenek metni sonradan değiştiyse veya listede yoksa da ekle
+                        elif s: 
+                            stats[s] = stats.get(s, 0) + 1
+                            
+                question_data['results'] = stats
 
-            if q.question_type == 'star':
-                # Yıldızlar için ortalama hesapla
-                # value field'ı TextField olduğu için önce cast etmek gerekebilir ama 
-                # basitlik adına Python tarafında hesaplayalım:
-                star_sum = 0
-                star_counts = {1:0, 2:0, 3:0, 4:0, 5:0}
+            # 3. STAR ve SCALE (Ortalama ve Dağılım)
+            elif q.question_type in ['star', 'scale']:
+                vals = []
+                distribution = {} 
+                
+                # Scale 1-10, Star 1-5 arası dağılım tablosu hazırlığı
+                max_val = 10 if q.question_type == 'scale' else 5
+                for i in range(1, max_val + 1):
+                    distribution[str(i)] = 0
                 
                 for a in answers:
                     try:
-                        val = int(a.value)
-                        star_sum += val
-                        if val in star_counts: star_counts[val] += 1
-                    except: pass
-                
-                q_data['results'] = {
-                    "average": round(star_sum / total_responses, 1) if total_responses > 0 else 0,
-                    "distribution": star_counts
-                }
+                        val = float(a.value)
+                        vals.append(val)
+                        
+                        # Dağılım grafiği için tam sayıya yuvarla (3.5 -> 3 gibi)
+                        k = str(int(val)) 
+                        if k in distribution:
+                            distribution[k] += 1
+                    except (ValueError, TypeError):
+                        pass
 
-            elif q.question_type == 'choice':
-                # Seçeneklerin sayımı
-                # Seçenekler virgülle ayrılmış string olarak geliyor, onları ayırıp sayacağız
-                counts = {}
-                # Seçenek listesini alalım
-                options_list = [opt.strip() for opt in q.options.split(',')] if q.options else []
-                for opt in options_list:
-                    counts[opt] = 0
-                
-                # Cevapları say
-                for a in answers:
-                    if a.value in counts:
-                        counts[a.value] += 1
-                    else:
-                        # Seçeneklerde olmayan bir cevap gelmişse (nadir)
-                        counts[a.value] = counts.get(a.value, 0) + 1
-                
-                q_data['results'] = counts
+                if vals:
+                    avg = sum(vals) / len(vals)
+                    question_data['results'] = {
+                        'average': round(avg, 1),
+                        'distribution': distribution
+                    }
+                else:
+                    question_data['results'] = {
+                        'average': 0,
+                        'distribution': distribution
+                    }
 
-            elif q.question_type == 'text':
-                # Metinler için son 50 cevabı listele
-                q_data['results'] = [a.value for a in answers.order_by('-id')[:50]]
-
-            analysis_data.append(q_data)
-
-        return APIResponse(analysis_data)
+            results_data.append(question_data)
+        
+        return APIResponse(results_data)
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
